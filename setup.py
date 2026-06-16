@@ -29,11 +29,15 @@ Built by cuda-wheels (`pip wheel . --no-build-isolation --no-deps` with
 TORCH_CUDA_ARCH_LIST set per build combo).
 """
 
+import sys
 from setuptools import setup, find_packages
 from torch.utils.cpp_extension import CUDAExtension, BuildExtension
 
+_IS_WIN = sys.platform == "win32"
+# nvcc flags are cross-platform; host-compiler (cxx) optimization flag differs:
+# MSVC uses /O2, gcc/clang use -O3.
 _nvcc = ["-O3", "--use_fast_math"]
-_cxx = ["-O3"]
+_cxx = ["/O2"] if _IS_WIN else ["-O3"]
 
 
 def _ext(name, sources):
