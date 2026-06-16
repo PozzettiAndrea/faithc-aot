@@ -8,13 +8,18 @@ target machine:
   * faithcontour  (Luo-Yihao/FaithC)      — mesh encode/decode codec (Apache-2.0)
   * atom3d        (Luo-Yihao/Atom3d)       — CUDA mesh primitives (MIT)
 
-Upstream `atom3d` JIT-compiles its kernels at first import; here every CUDA module
-is compiled ahead of time via CUDAExtension and shipped in the wheel:
+Upstream `atom3d` JIT-compiles its kernels at first import; here each is compiled
+ahead of time via CUDAExtension and shipped in the wheel:
 
-  * faithcontour._C                 (faithcontour/_csrc/{bindings.cpp,kernels.cu})
   * atom3d.kernels.cumtv_cuda       (atom3d/kernels/cumtv_kernels.cu)
   * atom3d.kernels.bvh_cuda         (atom3d/kernels/bvh_kernels.cu)
   * atom3d.kernels.floodfill_cuda   (atom3d/kernels/flood_fill_kernels.cu)
+
+The encode/decode (remesh) path — FCTEncoder/FCTDecoder, encoder/decoder/
+segment_ops — uses only `atom3d`. faithcontour's own legacy `_C` extension is
+reached solely via `api.py -> ops.py`, which nothing on the remesh path imports;
+upstream v1.5 declares no ext_modules and never builds it either, so we don't
+build it here (importing `faithcontour.api` is unsupported in this wheel).
 
 torch_scatter is NOT vendored — faithcontour falls back to a pure-torch shim if it
 is absent, and it is available as its own prebuilt cuda-wheels package; install it
@@ -40,8 +45,6 @@ def _ext(name, sources):
 
 
 ext_modules = [
-    _ext("faithcontour._C", ["faithcontour/_csrc/bindings.cpp",
-                             "faithcontour/_csrc/kernels.cu"]),
     _ext("atom3d.kernels.cumtv_cuda", ["atom3d/kernels/cumtv_kernels.cu"]),
     _ext("atom3d.kernels.bvh_cuda", ["atom3d/kernels/bvh_kernels.cu"]),
     _ext("atom3d.kernels.floodfill_cuda", ["atom3d/kernels/flood_fill_kernels.cu"]),

@@ -15,10 +15,9 @@ no `nvcc` required on the target machine:
 
 Upstream `atom3d` JIT-compiles its CUDA kernels on first import via
 `torch.utils.cpp_extension.load(...)`, which needs the CUDA toolkit present at runtime and
-pays a one-time compile. This fork compiles **every** CUDA module ahead of time via
-`CUDAExtension` and ships the `.so`s in the wheel:
+pays a one-time compile. This fork compiles each ahead of time via `CUDAExtension` and ships
+the `.so`s in the wheel:
 
-- `faithcontour._C` — `faithcontour/_csrc/{bindings.cpp,kernels.cu}`
 - `atom3d.kernels.cumtv_cuda` — `atom3d/kernels/cumtv_kernels.cu`
 - `atom3d.kernels.bvh_cuda` — `atom3d/kernels/bvh_kernels.cu`
 - `atom3d.kernels.floodfill_cuda` — `atom3d/kernels/flood_fill_kernels.cu`
@@ -26,6 +25,11 @@ pays a one-time compile. This fork compiles **every** CUDA module ahead of time 
 The only change to the vendored sources is in `atom3d/kernels/{__init__,bvh,flood_fill}.py`:
 each kernel loader now imports its **prebuilt** submodule first and only falls back to JIT
 for source installs.
+
+> **`faithcontour._C` is intentionally not built.** The encode/decode (remesh) path uses only
+> `atom3d`; faithcontour's legacy `_C` extension is reached solely via `api.py → ops.py`, which
+> nothing on the remesh path imports. Upstream v1.5 declares no `ext_modules` and never builds
+> `_C` either. (`faithcontour.api` is therefore unsupported in this wheel.)
 
 ## Install
 
