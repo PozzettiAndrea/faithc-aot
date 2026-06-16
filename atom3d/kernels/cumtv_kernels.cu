@@ -278,8 +278,8 @@ __global__ void sat_clip_polygon_kernel(
     const float* __restrict__ aabbs_min,    // [K, 3]
     const float* __restrict__ aabbs_max,    // [K, 3]
     const float* __restrict__ tris_verts,   // [M, 3, 3] = [M, 9]
-    const long* __restrict__ cand_a,        // [N] aabb indices
-    const long* __restrict__ cand_t,        // [N] triangle indices
+    const int64_t* __restrict__ cand_a,        // [N] aabb indices
+    const int64_t* __restrict__ cand_t,        // [N] triangle indices
     int64_t K,
     float eps,
     int mode,                               // 0: hit, 1: centroid, 2: full polygon
@@ -288,14 +288,14 @@ __global__ void sat_clip_polygon_kernel(
     float* __restrict__ poly_verts,         // [N, MAX_CLIP_VERTS, 3]
     float* __restrict__ centroids,          // [N, 3]
     float* __restrict__ areas,              // [N]
-    long* __restrict__ out_a_idx,           // [N]
-    long* __restrict__ out_t_idx            // [N]
+    int64_t* __restrict__ out_a_idx,           // [N]
+    int64_t* __restrict__ out_t_idx            // [N]
 ) {
     int k = blockIdx.x * blockDim.x + threadIdx.x;
     if (k >= K) return;
     
-    long ai = cand_a[k];
-    long ti = cand_t[k];
+    int64_t ai = cand_a[k];
+    int64_t ti = cand_t[k];
     out_a_idx[k] = ai;
     out_t_idx[k] = ti;
     
@@ -706,8 +706,8 @@ __global__ void segment_tri_intersection_kernel(
     int num_tris,
     int max_hits,  // P0 FIX: max output capacity
     float eps,
-    long* __restrict__ out_seg_ids,
-    long* __restrict__ out_tri_ids,
+    int64_t* __restrict__ out_seg_ids,
+    int64_t* __restrict__ out_tri_ids,
     float* __restrict__ out_t,
     int* __restrict__ counter
 ) {
@@ -1008,8 +1008,8 @@ std::vector<at::Tensor> segment_tri_intersect_cuda(
         num_tris,
         (int)max_hits,  // P0 FIX: pass max_hits for bounds check
         eps,
-        out_seg_ids.data_ptr<long>(),
-        out_tri_ids.data_ptr<long>(),
+        out_seg_ids.data_ptr<int64_t>(),
+        out_tri_ids.data_ptr<int64_t>(),
         out_t.data_ptr<float>(),
         counter.data_ptr<int>()
     );
@@ -1082,8 +1082,8 @@ std::vector<at::Tensor> sat_clip_polygon_cuda(
         aabbs_min.data_ptr<float>(),
         aabbs_max.data_ptr<float>(),
         tris_verts.data_ptr<float>(),
-        cand_a.data_ptr<long>(),
-        cand_t.data_ptr<long>(),
+        cand_a.data_ptr<int64_t>(),
+        cand_t.data_ptr<int64_t>(),
         K,
         eps,
         mode,
@@ -1092,8 +1092,8 @@ std::vector<at::Tensor> sat_clip_polygon_cuda(
         (mode == 2) ? poly_verts.data_ptr<float>() : nullptr,
         centroids.data_ptr<float>(),
         areas.data_ptr<float>(),
-        out_a_idx.data_ptr<long>(),
-        out_t_idx.data_ptr<long>()
+        out_a_idx.data_ptr<int64_t>(),
+        out_t_idx.data_ptr<int64_t>()
     );
     
     return {hit_mask, poly_counts, poly_verts, centroids, areas, out_a_idx, out_t_idx};
