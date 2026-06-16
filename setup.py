@@ -49,7 +49,9 @@ ext_modules = [
 
 setup(
     name="faithc-aot",
-    version="1.5.0+aot",
+    # Plain version (no local '+aot' segment): cuda-wheels appends its own
+    # '+cuXXXtorchYY' local segment at rename time, and PEP 440 allows only one.
+    version="1.5.0",
     description="FaithContour + Atom3d, prebuilt AOT CUDA wheel (mesh encode/decode for remeshing).",
     long_description=__doc__,
     long_description_content_type="text/plain",
