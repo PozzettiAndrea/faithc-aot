@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+# atom3d JIT cache (never ship; AOT .so is built into the wheel instead)
+atom3d/kernels/build/

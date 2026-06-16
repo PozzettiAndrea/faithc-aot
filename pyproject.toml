@@ -1,0 +1,5 @@
+[build-system]
+# torch must already be importable in the build env (cuda-wheels builds with
+# `pip wheel . --no-build-isolation`), since setup.py imports CUDAExtension.
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
